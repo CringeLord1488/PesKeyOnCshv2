@@ -1,0 +1,57 @@
+# Build artifacts
+bin/
+obj/
+
+# SQLite database
+passwords.db
+*.sqlite
+*.db3
+
+# Visual Studio / Rider
+*.sln.cache
+*.user
+*.suo
+*.vspscc
+*.vshost.*
+[Oo]rig*
+*.orig
+*.rej
+*.swp
+*~
+.vs/
+
+# NuGet
+*.nupkg
+*.snupkg
+*.nuspec
+*.snuspec
+packages/
+
+# Runtime files
+*.dll
+*.exe
+*.pdb
+*.cache
+*.log
+*.tmp
+
+# Temporary files
+[Tt]humbs.db
+*.DS_Store
+*.class
+*.lock
+*.sublime-project
+*.sublime-workspace
+
+# IDE specific
+.idea/
+*.iml
+*.iws
+*.pidb
+*.sln.docstates
+
+# Local user data
+user.json
+credentials.json
+appsettings.json
+secrets/
