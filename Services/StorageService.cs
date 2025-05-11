@@ -16,5 +16,14 @@ public class StorageService
         _context.SaveChanges();
     }
 
+    public void DeleteCredential(int id)
+    {
+    var credential = _context.Credentials.Find(id);
+    if (credential != null)
+    {
+        _context.Credentials.Remove(credential);
+        _context.SaveChanges();
+    }
+    }
     public List<Credential> ReadCredentials() => _context.Credentials.ToList();
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using PasswordManagerApp.Services;
@@ -11,8 +12,9 @@ public class CredentialListForm : Form
     private readonly AuthService _authService;
     private readonly StorageService _storageService;
     private readonly string _masterPassword;
-    private Button _addButton = null!;
 
+    private Button _addButton = null!;
+    
     public CredentialListForm(AuthService authService, StorageService storageService, string masterPassword)
     {
         _authService = authService;
@@ -24,24 +26,24 @@ public class CredentialListForm : Form
 
     private void InitializeUI()
     {
-        Text = "Ваши данные";
+        Text = "KeyPes — Записи";
         Size = new Size(500, 700);
         StartPosition = FormStartPosition.CenterScreen;
         BackColor = Color.LightGray;
-        FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
+        FormBorderStyle = FormBorderStyle.FixedSingle;
 
         // Верхняя панель с заголовком
         var topPanel = new Panel
         {
             Dock = DockStyle.Top,
             Height = 60,
-            BackColor = Color.FromArgb(64, 64, 64)
+            BackColor = Color.FromArgb(40, 40, 40)
         };
 
         var titleLabel = new Label
         {
-            Text = "KeyPes — Записи",
+            Text = "Ваши данные",
             ForeColor = Color.HotPink,
             Font = new Font("Segoe UI", 16F, FontStyle.Bold),
             Dock = DockStyle.Fill,
@@ -63,7 +65,7 @@ public class CredentialListForm : Form
 
         foreach (var cred in _storageService.ReadCredentials())
         {
-            var panel = new Panel
+            var container = new Panel
             {
                 Width = flowPanel.Width - 40,
                 Height = 60,
@@ -76,13 +78,36 @@ public class CredentialListForm : Form
             var loginLabel = new Label { Text = $"Логин: {cred.Login}", Location = new Point(10, 30), AutoSize = true };
             var passLabel = new Label { Text = $"Пароль: {AesEncryption.Decrypt(cred.EncryptedPassword, _masterPassword)}", Location = new Point(10, 50), AutoSize = true };
 
-            panel.Controls.AddRange(new Control[] { nameLabel, loginLabel, passLabel });
-            flowPanel.Controls.Add(panel);
+            // Кнопка удаления ❌
+            var deleteButton = new Button
+            {
+                Text = "✕",
+                Width = 30,
+                Height = 30,
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.Red,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10F),
+                Tag = cred.Id
+            };
+
+            deleteButton.Location = new Point(container.Width - deleteButton.Width - 10, 10); // Правый верхний угол
+            deleteButton.Click += (s, e) =>
+            {
+                int id = (int)deleteButton.Tag!;
+                _storageService.DeleteCredential(id);
+
+                Controls.Clear();
+                InitializeUI(); // Обновляем интерфейс
+            };
+
+            container.Controls.AddRange(new Control[] { nameLabel, loginLabel, passLabel, deleteButton });
+            flowPanel.Controls.Add(container);
         }
 
         Controls.Add(flowPanel);
 
-        // Кнопка +
+        // Кнопка добавления +
         _addButton = new Button
         {
             Text = "+",
@@ -94,21 +119,19 @@ public class CredentialListForm : Form
             Font = new Font("Segoe UI", 20F, FontStyle.Regular),
             Anchor = AnchorStyles.Bottom | AnchorStyles.Right
         };
-
         _addButton.Click += (s, e) => ShowAddForm();
 
         Controls.Add(_addButton);
-        _addButton.BringToFront(); // Не забываем про эту хуйлушу, чтоб не пряталась где попало
+        _addButton.BringToFront();
 
-        // Позиционируем кнопку на форме
-        UpdateButtonLocation();
+        // Обновляем расположение кнопки после создания
+        Load += (s, e) => UpdateAddButtonLocation();
+        Resize += (s, e) => UpdateAddButtonLocation();
 
-        // Подписываемся на Resize и Load, чтобы корректно позиционировать
-        Load += (s, e) => UpdateButtonLocation();
-        Resize += (s, e) => UpdateButtonLocation();
+        UpdateAddButtonLocation();
     }
 
-    private void UpdateButtonLocation()
+    private void UpdateAddButtonLocation()
     {
         if (_addButton != null)
         {
@@ -124,8 +147,8 @@ public class CredentialListForm : Form
         var addForm = new AddCredentialForm(_storageService, _masterPassword);
         addForm.FormClosed += (s, e) =>
         {
-            Controls.Clear();     // Очищаем форму
-            InitializeUI();       // Пересоздаём интерфейс
+            Controls.Clear();
+            InitializeUI(); // Перезагружаем форму
         };
         addForm.Show(this);
     }
