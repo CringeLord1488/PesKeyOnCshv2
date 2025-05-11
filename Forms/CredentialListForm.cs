@@ -1,7 +1,7 @@
 using System.Drawing;
 using System.Windows.Forms;
-using PasswordManagerApp.Models;
 using PasswordManagerApp.Services;
+using PasswordManagerApp.Models;
 using PasswordManagerApp.Utils;
 
 namespace PasswordManagerApp.Forms;
@@ -10,39 +10,52 @@ public class CredentialListForm : Form
 {
     private readonly AuthService _authService;
     private readonly StorageService _storageService;
+    private readonly string _masterPassword;
 
-    public CredentialListForm(AuthService authService, StorageService storageService)
+    public CredentialListForm(AuthService authService, StorageService storageService, string masterPassword)
     {
         _authService = authService;
         _storageService = storageService;
+        _masterPassword = masterPassword;
 
         InitializeUI();
     }
 
     private void InitializeUI()
     {
-        Text = "Записи";
+        Text = "Ваши данные";
         Size = new Size(500, 700);
         StartPosition = FormStartPosition.CenterScreen;
-        BackColor = Color.WhiteSmoke;
+        BackColor = Color.LightGray;
+        FormBorderStyle = FormBorderStyle.FixedSingle;
+        MaximizeBox = false;
+
+        var topPanel = new Panel
+        {
+            Dock = DockStyle.Top,
+            Height = 60,
+            BackColor = Color.FromArgb(64, 64, 64)
+        };
 
         var titleLabel = new Label
         {
-            Text = "Ваши учётные данные",
-            Dock = DockStyle.Top,
-            Height = 60,
-            TextAlign = ContentAlignment.MiddleCenter,
+            Text = "KeyPes — Записи",
+            ForeColor = Color.HotPink,
             Font = new Font("Segoe UI", 16F, FontStyle.Bold),
-            ForeColor = Color.HotPink
+            Dock = DockStyle.Fill,
+            TextAlign = ContentAlignment.MiddleCenter
         };
-        Controls.Add(titleLabel);
+        topPanel.Controls.Add(titleLabel);
+        Controls.Add(topPanel);
 
         var flowPanel = new FlowLayoutPanel
         {
             Dock = DockStyle.Fill,
             AutoScroll = true,
             FlowDirection = FlowDirection.TopDown,
-            WrapContents = false
+            WrapContents = false,
+            Padding = new Padding(10),
+            BackColor = Color.WhiteSmoke
         };
 
         foreach (var cred in _storageService.ReadCredentials())
@@ -53,12 +66,15 @@ public class CredentialListForm : Form
                 Height = 60,
                 BorderStyle = BorderStyle.FixedSingle,
                 BackColor = Color.LightBlue,
-                Margin = new Padding(10)
+                Margin = new Padding(5)
             };
+
+            // ✅ Теперь передаем _masterPassword
+            var pass = AesEncryption.Decrypt(cred.EncryptedPassword, _masterPassword);
 
             var nameLabel = new Label { Text = $"Сервис: {cred.ServiceName}", Location = new Point(10, 10), AutoSize = true };
             var loginLabel = new Label { Text = $"Логин: {cred.Login}", Location = new Point(10, 30), AutoSize = true };
-            var passLabel = new Label { Text = $"Пароль: {AesEncryption.Decrypt(cred.EncryptedPassword)}", Location = new Point(10, 50), AutoSize = true };
+            var passLabel = new Label { Text = $"Пароль: {pass}", Location = new Point(10, 50), AutoSize = true };
 
             panel.Controls.AddRange(new Control[] { nameLabel, loginLabel, passLabel });
             flowPanel.Controls.Add(panel);
@@ -66,16 +82,15 @@ public class CredentialListForm : Form
 
         Controls.Add(flowPanel);
 
-        // Кнопка добавления +
         var addButton = new Button
         {
             Text = "+",
-            Font = new Font("Segoe UI", 20F),
             Width = 60,
             Height = 60,
+            FlatStyle = FlatStyle.Flat,
             BackColor = Color.HotPink,
             ForeColor = Color.White,
-            FlatStyle = FlatStyle.Flat
+            Font = new Font("Segoe UI", 20F, FontStyle.Regular)
         };
 
         Load += (s, e) =>
@@ -91,17 +106,21 @@ public class CredentialListForm : Form
         addButton.Click += (s, e) => ShowAddForm();
 
         Controls.Add(addButton);
+        addButton.BringToFront(); 
     }
 
     private void ShowAddForm()
     {
-        var addForm = new AddCredentialForm(_storageService);
-        addForm.FormClosed += (s, e) =>
+        var addForm = new AddCredentialForm(_storageService, _masterPassword);
+        addForm.FormClosed += (sender, args) =>
         {
-            Controls.Clear();
-            InitializeUI(); // Обновляем интерфейс
+            if (addForm.DialogResult == DialogResult.OK)
+            {
+               // ✅ Очищаем форму и перерисовываем её заново
+                Controls.Clear();
+                InitializeUI(); // Обновляем список
+            }
         };
         addForm.Show(this);
-        Hide();
     }
 }

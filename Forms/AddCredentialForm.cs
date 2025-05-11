@@ -8,10 +8,13 @@ namespace PasswordManagerApp.Forms;
 public class AddCredentialForm : Form
 {
     private readonly StorageService _storageService;
+    private readonly string _masterPassword;
 
-    public AddCredentialForm(StorageService storageService)
+    public AddCredentialForm(StorageService storageService, string masterPassword)
     {
         _storageService = storageService;
+        _masterPassword = masterPassword;
+
         InitializeComponent();
     }
 
@@ -30,10 +33,11 @@ public class AddCredentialForm : Form
             Text = "Сохранить",
             Location = new Point(50, 180),
             Width = 200,
-            BackColor = Color.FromArgb(0, 120, 215),
+            BackColor = Color.HotPink,
             ForeColor = Color.White,
             FlatStyle = FlatStyle.Flat
         };
+
         saveBtn.Click += (s, e) =>
         {
             if (string.IsNullOrWhiteSpace(serviceBox.Text) ||
@@ -48,12 +52,14 @@ public class AddCredentialForm : Form
             {
                 ServiceName = serviceBox.Text,
                 Login = loginBox.Text,
-                EncryptedPassword = AesEncryption.Encrypt(passwordBox.Text)
+
+                // ✅ Теперь передаем мастер-пароль
+                EncryptedPassword = AesEncryption.Encrypt(passwordBox.Text, _masterPassword)
             };
 
             _storageService.SaveCredential(credential);
             DialogResult = DialogResult.OK;
-            Close();
+            this.Close(); // снова ставим клоуз, если че - поменять
         };
 
         Controls.Add(new Label { Text = "Сервис", Location = new Point(50, 10), AutoSize = true });

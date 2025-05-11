@@ -19,34 +19,33 @@ public class MainForm : Form
 
     private void InitializeUI()
     {
-        // 🔧 Основные настройки окна
         Text = "KeyPes";
         Size = new Size(500, 700);
         StartPosition = FormStartPosition.CenterScreen;
         BackColor = Color.LightGray;
-        FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
+        FormBorderStyle = FormBorderStyle.FixedSingle;
 
-        // 🟪 Верхняя панель с названием
+        // Верхняя панель с заголовком
         var topPanel = new Panel
         {
             Dock = DockStyle.Top,
             Height = 60,
-            BackColor = Color.FromArgb(245, 245, 245)
+            BackColor = Color.FromArgb(40, 40, 40)
         };
 
         var titleLabel = new Label
         {
             Text = "KeyPes",
-            Font = new Font("Segoe UI", 18F, FontStyle.Bold),
             ForeColor = Color.HotPink,
+            Font = new Font("Segoe UI", 16F, FontStyle.Bold),
             Dock = DockStyle.Fill,
             TextAlign = ContentAlignment.MiddleCenter
         };
         topPanel.Controls.Add(titleLabel);
         Controls.Add(topPanel);
 
-        // 🧱 Центральная часть — кнопки входа и регистрации
+        // Центральная часть — кнопки входа и регистрации
         var centerPanel = new Panel
         {
             Dock = DockStyle.Fill,
@@ -58,11 +57,11 @@ public class MainForm : Form
             Text = "Войти",
             Width = 200,
             Height = 40,
-            Location = new Point((Width - 200) / 2, (Height - 100) / 2),
+            Location = new Point((Width - 200) / 2, (Height - 80) / 2),
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.HotPink,
             ForeColor = Color.White,
-            Font = new Font("Segoe UI", 12F)
+            Font = new Font("Segoe UI", 12F, FontStyle.Regular)
         };
         loginButton.Click += (s, e) => ShowLoginForm();
 
@@ -71,11 +70,11 @@ public class MainForm : Form
             Text = "Зарегистрироваться",
             Width = 200,
             Height = 40,
-            Location = new Point((Width - 200) / 2, (Height - 100) / 2 + 50),
+            Location = new Point((Width - 200) / 2, (Height - 80) / 2 + 50),
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.Pink,
             ForeColor = Color.White,
-            Font = new Font("Segoe UI", 12F)
+            Font = new Font("Segoe UI", 12F, FontStyle.Regular)
         };
         registerButton.Click += (s, e) => ShowRegisterForm();
 
@@ -85,18 +84,16 @@ public class MainForm : Form
     }
 
     private void ShowLoginForm()
-{
-    var loginForm = new LoginForm(_authService, _storageService); // ✅ Передаем оба сервиса
-    loginForm.FormClosed += (s, e) =>
     {
-        if (loginForm.DialogResult == DialogResult.OK)
+        var loginForm = new LoginForm(_authService);
+        if (loginForm.ShowDialog() == DialogResult.OK)
         {
-            Application.Run(new CredentialListForm(_authService, _storageService));
+            var credentialListForm = new CredentialListForm(_authService, _storageService, loginForm.MasterPassword);
+            credentialListForm.FormClosed += (s, e) => this.Show();
+            credentialListForm.Show();
+            this.Hide();
         }
-    };
-    loginForm.Show(this);
-    Hide();
-}
+    }
 
     private void ShowRegisterForm()
     {

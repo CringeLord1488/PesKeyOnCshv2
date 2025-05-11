@@ -5,23 +5,24 @@ namespace PasswordManagerApp.Forms;
 
 public class LoginForm : Form
 {
-    private readonly AuthService _authService;
-    private readonly StorageService _storageService; // ✅ Добавь это
+    // 🔐 Свойство для получения мастер-пароля после входа
+    public string MasterPassword { get; private set; } = "";
 
-    public LoginForm(AuthService authService, StorageService storageService) // ✅ Обнови конструктор
+    private readonly AuthService _authService;
+
+    public LoginForm(AuthService authService)
     {
         _authService = authService;
-        _storageService = storageService;
-
-        InitializeUI();
-        BackColor = Color.LightGray;
+        InitializeComponent();
     }
 
-    private void InitializeUI()
+    private void InitializeComponent()
     {
         Text = "Вход";
         Size = new Size(300, 250);
         StartPosition = FormStartPosition.CenterParent;
+        MaximizeBox = false;
+        BackColor = Color.LightGray;
 
         var usernameBox = new TextBox { Location = new Point(50, 30), Width = 200 };
         var passwordBox = new TextBox { Location = new Point(50, 80), Width = 200, PasswordChar = '*' };
@@ -35,14 +36,16 @@ public class LoginForm : Form
             ForeColor = Color.White,
             FlatStyle = FlatStyle.Flat
         };
+
         loginBtn.Click += (s, e) =>
         {
             if (_authService.Login(usernameBox.Text, passwordBox.Text))
             {
-                // Теперь можем использовать _storageService
-                var credentialListForm = new CredentialListForm(_authService, _storageService);
-                credentialListForm.Show();
-                this.Hide(); // Скрываем текущую форму
+                // ✅ Сохраняем мастер-пароль из поля пароля
+                MasterPassword = passwordBox.Text;
+
+                DialogResult = DialogResult.OK;
+                Close();
             }
             else
             {
