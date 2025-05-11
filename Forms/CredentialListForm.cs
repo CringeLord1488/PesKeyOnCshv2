@@ -11,6 +11,7 @@ public class CredentialListForm : Form
     private readonly AuthService _authService;
     private readonly StorageService _storageService;
     private readonly string _masterPassword;
+    private Button _addButton = null!;
 
     public CredentialListForm(AuthService authService, StorageService storageService, string masterPassword)
     {
@@ -30,6 +31,7 @@ public class CredentialListForm : Form
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
 
+        // Верхняя панель с заголовком
         var topPanel = new Panel
         {
             Dock = DockStyle.Top,
@@ -48,6 +50,7 @@ public class CredentialListForm : Form
         topPanel.Controls.Add(titleLabel);
         Controls.Add(topPanel);
 
+        // Список записей
         var flowPanel = new FlowLayoutPanel
         {
             Dock = DockStyle.Fill,
@@ -69,12 +72,9 @@ public class CredentialListForm : Form
                 Margin = new Padding(5)
             };
 
-            // ✅ Теперь передаем _masterPassword
-            var pass = AesEncryption.Decrypt(cred.EncryptedPassword, _masterPassword);
-
             var nameLabel = new Label { Text = $"Сервис: {cred.ServiceName}", Location = new Point(10, 10), AutoSize = true };
             var loginLabel = new Label { Text = $"Логин: {cred.Login}", Location = new Point(10, 30), AutoSize = true };
-            var passLabel = new Label { Text = $"Пароль: {pass}", Location = new Point(10, 50), AutoSize = true };
+            var passLabel = new Label { Text = $"Пароль: {AesEncryption.Decrypt(cred.EncryptedPassword, _masterPassword)}", Location = new Point(10, 50), AutoSize = true };
 
             panel.Controls.AddRange(new Control[] { nameLabel, loginLabel, passLabel });
             flowPanel.Controls.Add(panel);
@@ -82,7 +82,8 @@ public class CredentialListForm : Form
 
         Controls.Add(flowPanel);
 
-        var addButton = new Button
+        // Кнопка +
+        _addButton = new Button
         {
             Text = "+",
             Width = 60,
@@ -90,36 +91,41 @@ public class CredentialListForm : Form
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.HotPink,
             ForeColor = Color.White,
-            Font = new Font("Segoe UI", 20F, FontStyle.Regular)
+            Font = new Font("Segoe UI", 20F, FontStyle.Regular),
+            Anchor = AnchorStyles.Bottom | AnchorStyles.Right
         };
 
-        Load += (s, e) =>
+        _addButton.Click += (s, e) => ShowAddForm();
+
+        Controls.Add(_addButton);
+        _addButton.BringToFront(); // Не забываем про эту хуйлушу, чтоб не пряталась где попало
+
+        // Позиционируем кнопку на форме
+        UpdateButtonLocation();
+
+        // Подписываемся на Resize и Load, чтобы корректно позиционировать
+        Load += (s, e) => UpdateButtonLocation();
+        Resize += (s, e) => UpdateButtonLocation();
+    }
+
+    private void UpdateButtonLocation()
+    {
+        if (_addButton != null)
         {
-            addButton.Location = new Point((ClientSize.Width - addButton.Width) / 2, ClientSize.Height - addButton.Height - 80);
-        };
-
-        Resize += (s, e) =>
-        {
-            addButton.Location = new Point((ClientSize.Width - addButton.Width) / 2, ClientSize.Height - addButton.Height - 80);
-        };
-
-        addButton.Click += (s, e) => ShowAddForm();
-
-        Controls.Add(addButton);
-        addButton.BringToFront(); 
+            _addButton.Location = new Point(
+                (ClientSize.Width - _addButton.Width) / 2,
+                ClientSize.Height - _addButton.Height - 80
+            );
+        }
     }
 
     private void ShowAddForm()
     {
         var addForm = new AddCredentialForm(_storageService, _masterPassword);
-        addForm.FormClosed += (sender, args) =>
+        addForm.FormClosed += (s, e) =>
         {
-            if (addForm.DialogResult == DialogResult.OK)
-            {
-               // ✅ Очищаем форму и перерисовываем её заново
-                Controls.Clear();
-                InitializeUI(); // Обновляем список
-            }
+            Controls.Clear();     // Очищаем форму
+            InitializeUI();       // Пересоздаём интерфейс
         };
         addForm.Show(this);
     }
