@@ -3,7 +3,7 @@ using System.Windows.Forms;
 using PasswordManagerApp.Services;
 using PasswordManagerApp.Models;
 using PasswordManagerApp.Utils;
-using System.Drawing.Drawing2D; // Добавлено для GraphicsPath
+using System.Drawing.Drawing2D;
 
 namespace PasswordManagerApp.Forms;
 
@@ -74,9 +74,29 @@ public class CredentialListForm : Form
                 Width = 400,
                 Height = 80,
                 BorderStyle = BorderStyle.FixedSingle,
-                BackColor = Color.LightBlue,
+                BackColor = Color.HotPink,
                 Margin = new Padding((flowPanel.ClientSize.Width - 400) / 2, 5, (flowPanel.ClientSize.Width - 400) / 2, 5) // Центрируем
             };
+
+            // Делаем панель со скруглёнными углами
+            using (var path = new GraphicsPath())
+            {
+                int radius = 15; // Радиус скругления углов
+                int diameter = radius * 2;
+                Rectangle bounds = new Rectangle(0, 0, container.Width - 1, container.Height - 1);
+
+                // Левый верхний угол
+                path.AddArc(bounds.X, bounds.Y, diameter, diameter, 180, 90);
+                // Правый верхний угол
+                path.AddArc(bounds.Width - diameter, bounds.Y, diameter, diameter, 270, 90);
+                // Правый нижний угол
+                path.AddArc(bounds.Width - diameter, bounds.Height - diameter, diameter, diameter, 0, 90);
+                // Левый нижний угол
+                path.AddArc(bounds.X, bounds.Height - diameter, diameter, diameter, 90, 90);
+                path.CloseFigure();
+
+                container.Region = new Region(path);
+            }
 
             // Панель для меток (чтобы они не перекрывали кнопку)
             var labelPanel = new Panel
@@ -122,7 +142,7 @@ public class CredentialListForm : Form
                 Width = 30,
                 Height = 30,
                 FlatStyle = FlatStyle.Flat,
-                BackColor = Color.Red,
+                BackColor = Color.DarkViolet,
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 10F),
                 Tag = cred.Id,
@@ -159,8 +179,14 @@ public class CredentialListForm : Form
             BackColor = Color.HotPink,
             ForeColor = Color.White,
             Font = new Font("Segoe UI", 20F, FontStyle.Regular),
+            TextAlign = ContentAlignment.MiddleCenter,
             Anchor = AnchorStyles.None
         };
+
+        // Настройка плоского вида для минимизации отступов
+        _addButton.FlatAppearance.BorderSize = 0;
+        _addButton.FlatAppearance.MouseDownBackColor = Color.DeepPink;
+        _addButton.FlatAppearance.MouseOverBackColor = Color.Pink;
 
         // Делаем кнопку круглой
         using (var path = new GraphicsPath())
