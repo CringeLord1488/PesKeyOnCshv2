@@ -1,20 +1,24 @@
 ﻿using System;
 using System.Windows.Forms;
+using Microsoft.EntityFrameworkCore;
 using PasswordManagerApp.Data;
 using PasswordManagerApp.Services;
-using Microsoft.EntityFrameworkCore;
-using PasswordManagerApp.Forms;
+using PasswordManagerApp.Utils;
 
 Application.EnableVisualStyles();
 Application.SetCompatibleTextRenderingDefault(false);
 
+// Путь к базе в AppData
+string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+string dbPath = Path.Combine(appDataPath, "KeyPes", "passwords.db");
+
 var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-optionsBuilder.UseSqlite("Data Source=passwords.db");
+optionsBuilder.UseSqlite($"Data Source={dbPath}");
 
 using var context = new AppDbContext(optionsBuilder.Options);
-context.Database.EnsureCreated();
+context.Database.Migrate(); // Или EnsureCreated(), если не используешь миграции
 
 var authService = new AuthService(context);
-var storageService = new StorageService(context);
+authService.StorageService = new StorageService(context);
 
-Application.Run(new MainForm(authService, storageService));
+Application.Run(new LoginForm(authService));
