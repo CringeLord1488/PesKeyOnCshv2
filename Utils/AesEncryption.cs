@@ -7,18 +7,19 @@ namespace PasswordManagerApp.Utils;
 
 public static class AesEncryption
 {
-    // 🔑 Генерация ключа из пароля пользователя
-    private static byte[] DeriveKeyFromPassword(string password)
+    // 🔐 Генерация ключа из мастер-пароля
+    private static byte[] DeriveKeyFromPassword(string masterPassword)
     {
-        using var deriveBytes = new Rfc2898DeriveBytes(password, 16, 10000, HashAlgorithmName.SHA512);
+        byte[] salt = Encoding.UTF8.GetBytes("your-salt-here"); // Не меняй после первого запуска!
+        using var deriveBytes = new Rfc2898DeriveBytes(masterPassword, salt, 10000, HashAlgorithmName.SHA512);
         return deriveBytes.GetBytes(32); // 32 байта для AES-256
     }
 
-    // 🔒 Шифрование с мастер-паролем
-    public static string Encrypt(string plainText, string userPassword)
+    // 🔒 Шифрование пароля (принимает мастер-пароль)
+    public static string Encrypt(string plainText, string masterPassword)
     {
-        byte[] key = DeriveKeyFromPassword(userPassword);
-        byte[] iv = new byte[16]; // IV всегда 16 байт
+        byte[] key = DeriveKeyFromPassword(masterPassword); // ✅ Теперь masterPassword передан
+        byte[] iv = new byte[16]; // Новый IV при каждом шифровании
 
         using var aes = Aes.Create();
         aes.Key = key;
@@ -35,28 +36,28 @@ public static class AesEncryption
         cs.FlushFinalBlock();
 
         byte[] encryptedData = ms.ToArray();
-
         byte[] combined = new byte[iv.Length + encryptedData.Length];
+
         Buffer.BlockCopy(iv, 0, combined, 0, iv.Length);
         Buffer.BlockCopy(encryptedData, 0, combined, iv.Length, encryptedData.Length);
 
         return Convert.ToBase64String(combined);
     }
 
-    // 🔓 Расшифровка с мастер-паролем
-    public static string Decrypt(string cipherText, string userPassword)
+    // 🔓 Расшифровка пароля (тоже принимает мастер-пароль)
+    public static string Decrypt(string cipherText, string masterPassword)
     {
         try
         {
             byte[] fullCipher = Convert.FromBase64String(cipherText);
-            byte[] iv = new byte[16];
-            byte[] encryptedData = new byte[fullCipher.Length - 16];
 
+            byte[] iv = new byte[16];
             Buffer.BlockCopy(fullCipher, 0, iv, 0, iv.Length);
+
+            byte[] encryptedData = new byte[fullCipher.Length - iv.Length];
             Buffer.BlockCopy(fullCipher, iv.Length, encryptedData, 0, encryptedData.Length);
 
-            byte[] key = DeriveKeyFromPassword(userPassword);
-
+            byte[] key = DeriveKeyFromPassword(masterPassword); // ✅ Теперь masterPassword используется
             using var aes = Aes.Create();
             aes.Key = key;
             aes.IV = iv;
@@ -69,9 +70,10 @@ public static class AesEncryption
 
             return sr.ReadToEnd();
         }
-        catch
+        catch (Exception ex)
         {
-            return "[Ошибка расшифровки]";
+            Console.WriteLine($"Ошибка расшифровки: {ex.Message}");
+            return "[Ошибка]";
         }
     }
 }

@@ -19,7 +19,7 @@ public class CredentialListForm : Form
         _authService = authService;
         _storageService = storageService;
         _masterPassword = masterPassword;
-
+        Console.WriteLine($"MasterPassword: '{_masterPassword}'"); // Отладка
         InitializeUI();
     }
 
