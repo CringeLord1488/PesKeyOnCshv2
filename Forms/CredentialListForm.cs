@@ -61,7 +61,7 @@ public class CredentialListForm : Form
             BackColor = Color.WhiteSmoke,
             Anchor = AnchorStyles.Top, // Центрируем панель
             Location = new Point(0, topPanel.Height), // Устанавливаем после topPanel
-            Size = new Size(ClientSize.Width, ClientSize.Height - topPanel.Height - 100), // Оставляем место для кнопки
+            Size = new Size(ClientSize.Width, ClientSize.Height - topPanel.Height - 80), // Увеличена высота
         };
 
         flowPanel.Left = (ClientSize.Width - flowPanel.Width) / 2;
@@ -74,7 +74,7 @@ public class CredentialListForm : Form
                 Width = 400,
                 Height = 80,
                 BorderStyle = BorderStyle.FixedSingle,
-                BackColor = Color.HotPink,
+                BackColor = Color.LightBlue,
                 Margin = new Padding((flowPanel.ClientSize.Width - 400) / 2, 5, (flowPanel.ClientSize.Width - 400) / 2, 5) // Центрируем
             };
 
@@ -85,13 +85,9 @@ public class CredentialListForm : Form
                 int diameter = radius * 2;
                 Rectangle bounds = new Rectangle(0, 0, container.Width - 1, container.Height - 1);
 
-                // Левый верхний угол
                 path.AddArc(bounds.X, bounds.Y, diameter, diameter, 180, 90);
-                // Правый верхний угол
                 path.AddArc(bounds.Width - diameter, bounds.Y, diameter, diameter, 270, 90);
-                // Правый нижний угол
                 path.AddArc(bounds.Width - diameter, bounds.Height - diameter, diameter, diameter, 0, 90);
-                // Левый нижний угол
                 path.AddArc(bounds.X, bounds.Height - diameter, diameter, diameter, 90, 90);
                 path.CloseFigure();
 
@@ -142,7 +138,7 @@ public class CredentialListForm : Form
                 Width = 30,
                 Height = 30,
                 FlatStyle = FlatStyle.Flat,
-                BackColor = Color.DarkViolet,
+                BackColor = Color.Red,
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 10F),
                 Tag = cred.Id,
@@ -212,7 +208,7 @@ public class CredentialListForm : Form
         {
             _addButton.Location = new Point(
                 (ClientSize.Width - _addButton.Width) / 2,
-                ClientSize.Height - _addButton.Height - 80
+                ClientSize.Height - _addButton.Height - 10 // Уменьшен отступ
             );
         }
     }
