@@ -54,24 +54,27 @@ public class CredentialListForm : Form
         // Список записей
         var flowPanel = new FlowLayoutPanel
         {
-            Dock = DockStyle.Fill,
             AutoScroll = true,
             FlowDirection = FlowDirection.TopDown,
             WrapContents = false,
-            Padding = new Padding(10),
-            BackColor = Color.WhiteSmoke
+            BackColor = Color.WhiteSmoke,
+            Anchor = AnchorStyles.Top, // Центрируем панель
+            Location = new Point(0, topPanel.Height), // Устанавливаем после topPanel
+            Size = new Size(ClientSize.Width, ClientSize.Height - topPanel.Height - 100), // Оставляем место для кнопки
         };
+
+        flowPanel.Left = (ClientSize.Width - flowPanel.Width) / 2;
 
         foreach (var cred in _storageService.ReadCredentials())
         {
             // Контейнер для записи
             var container = new Panel
             {
-                Width = flowPanel.Width - 70,
+                Width = 400,
                 Height = 80,
                 BorderStyle = BorderStyle.FixedSingle,
                 BackColor = Color.LightBlue,
-                Margin = new Padding(5)
+                Margin = new Padding((flowPanel.ClientSize.Width - 400) / 2, 5, (flowPanel.ClientSize.Width - 400) / 2, 5) // Центрируем
             };
 
             // Панель для меток (чтобы они не перекрывали кнопку)
@@ -127,8 +130,7 @@ public class CredentialListForm : Form
             {
                 int id = (int)deleteButton.Tag!;
                 _storageService.DeleteCredential(id);
-                Controls.Clear();
-                InitializeUI(); // Перезагружаем интерфейс
+                flowPanel.Controls.Remove(container);
             };
 
             deleteButton.Location = new Point(container.Width - deleteButton.Width - 10, 10);
@@ -156,7 +158,7 @@ public class CredentialListForm : Form
             BackColor = Color.HotPink,
             ForeColor = Color.White,
             Font = new Font("Segoe UI", 20F, FontStyle.Regular),
-            Anchor = AnchorStyles.Bottom | AnchorStyles.Right
+            Anchor = AnchorStyles.None
         };
         _addButton.Click += (s, e) => ShowAddForm();
 
