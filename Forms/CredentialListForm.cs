@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using PasswordManagerApp.Services;
 using PasswordManagerApp.Models;
 using PasswordManagerApp.Utils;
+using System.Drawing.Drawing2D; // Добавлено для GraphicsPath
 
 namespace PasswordManagerApp.Forms;
 
@@ -135,12 +136,12 @@ public class CredentialListForm : Form
 
             deleteButton.Location = new Point(container.Width - deleteButton.Width - 10, 10);
 
-           // Добавляем метки в labelPanel
+            // Добавляем метки в labelPanel
             labelPanel.Controls.Add(passLabel);
             labelPanel.Controls.Add(loginLabel);
             labelPanel.Controls.Add(nameLabel);
 
-           // Добавляем элементы в контейнер
+            // Добавляем элементы в контейнер
             container.Controls.Add(labelPanel);
             container.Controls.Add(deleteButton);
             flowPanel.Controls.Add(container);
@@ -160,6 +161,14 @@ public class CredentialListForm : Form
             Font = new Font("Segoe UI", 20F, FontStyle.Regular),
             Anchor = AnchorStyles.None
         };
+
+        // Делаем кнопку круглой
+        using (var path = new GraphicsPath())
+        {
+            path.AddEllipse(0, 0, _addButton.Width - 1, _addButton.Height - 1);
+            _addButton.Region = new Region(path);
+        }
+
         _addButton.Click += (s, e) => ShowAddForm();
 
         Controls.Add(_addButton);
