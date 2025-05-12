@@ -37,7 +37,7 @@ public class CredentialListForm : Form
         {
             Dock = DockStyle.Top,
             Height = 60,
-            BackColor = Color.FromArgb(40, 40, 40)
+            BackColor = Color.DarkViolet
         };
 
         var titleLabel = new Label
