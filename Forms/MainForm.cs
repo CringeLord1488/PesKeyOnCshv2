@@ -22,7 +22,7 @@ public class MainForm : Form
         Text = "KeyPes";
         Size = new Size(500, 700);
         StartPosition = FormStartPosition.CenterScreen;
-        BackColor = Color.LightGray;
+        BackColor = Color.Purple;
         MaximizeBox = false;
         FormBorderStyle = FormBorderStyle.FixedSingle;
 
@@ -31,7 +31,7 @@ public class MainForm : Form
         {
             Dock = DockStyle.Top,
             Height = 60,
-            BackColor = Color.FromArgb(40, 40, 40)
+            BackColor = Color.DarkViolet
         };
 
         var titleLabel = new Label
@@ -45,19 +45,32 @@ public class MainForm : Form
         topPanel.Controls.Add(titleLabel);
         Controls.Add(topPanel);
 
-        // Центральная часть — кнопки входа и регистрации
+        // Центральная часть — надпись и кнопки
         var centerPanel = new Panel
         {
             Dock = DockStyle.Fill,
             BackColor = Color.WhiteSmoke
         };
 
+        // Новая надпись
+        var sloganLabel = new Label
+        {
+            Text = "Ваши данные - наша забота",
+            ForeColor = Color.HotPink,
+            Font = new Font("Segoe UI", 12F, FontStyle.Regular),
+            AutoSize = true,
+            BackColor = Color.Transparent,
+            TextAlign = ContentAlignment.MiddleCenter
+        };
+        // Центрируем надпись по горизонтали и размещаем выше кнопок
+        sloganLabel.Location = new Point((Width - sloganLabel.PreferredWidth) / 2, 150);
+
         var loginButton = new Button
         {
             Text = "Войти",
             Width = 200,
             Height = 40,
-            Location = new Point((Width - 200) / 2, (Height - 80) / 2),
+            Location = new Point((Width - 200) / 2, 220), // Сдвинули вниз
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.HotPink,
             ForeColor = Color.White,
@@ -70,7 +83,7 @@ public class MainForm : Form
             Text = "Зарегистрироваться",
             Width = 200,
             Height = 40,
-            Location = new Point((Width - 200) / 2, (Height - 80) / 2 + 50),
+            Location = new Point((Width - 200) / 2, 270), // Сдвинули вниз
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.Pink,
             ForeColor = Color.White,
@@ -78,6 +91,7 @@ public class MainForm : Form
         };
         registerButton.Click += (s, e) => ShowRegisterForm();
 
+        centerPanel.Controls.Add(sloganLabel);
         centerPanel.Controls.Add(loginButton);
         centerPanel.Controls.Add(registerButton);
         Controls.Add(centerPanel);
