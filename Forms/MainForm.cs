@@ -1,6 +1,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 using PasswordManagerApp.Services;
+using System.Diagnostics;
 
 namespace PasswordManagerApp.Forms;
 
@@ -45,14 +46,14 @@ public class MainForm : Form
         topPanel.Controls.Add(titleLabel);
         Controls.Add(topPanel);
 
-        // Центральная часть — надпись и кнопки
+        // Центральная часть — надпись, кнопки и ссылка
         var centerPanel = new Panel
         {
             Dock = DockStyle.Fill,
             BackColor = Color.WhiteSmoke
         };
 
-        // Новая надпись
+        // Надпись "Ваши данные - наша забота"
         var sloganLabel = new Label
         {
             Text = "Ваши данные - наша забота",
@@ -62,7 +63,6 @@ public class MainForm : Form
             BackColor = Color.Transparent,
             TextAlign = ContentAlignment.MiddleCenter
         };
-        // Центрируем надпись по горизонтали и размещаем выше кнопок
         sloganLabel.Location = new Point((Width - sloganLabel.PreferredWidth) / 2, 150);
 
         var loginButton = new Button
@@ -70,7 +70,7 @@ public class MainForm : Form
             Text = "Войти",
             Width = 200,
             Height = 40,
-            Location = new Point((Width - 200) / 2, 220), // Сдвинули вниз
+            Location = new Point((Width - 200) / 2, 220),
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.HotPink,
             ForeColor = Color.White,
@@ -83,7 +83,7 @@ public class MainForm : Form
             Text = "Зарегистрироваться",
             Width = 200,
             Height = 40,
-            Location = new Point((Width - 200) / 2, 270), // Сдвинули вниз
+            Location = new Point((Width - 200) / 2, 270),
             FlatStyle = FlatStyle.Flat,
             BackColor = Color.Pink,
             ForeColor = Color.White,
@@ -91,9 +91,39 @@ public class MainForm : Form
         };
         registerButton.Click += (s, e) => ShowRegisterForm();
 
+        // Ссылка внизу
+        var linkLabel = new LinkLabel
+        {
+            Text = "https://vk.com/public213597544",
+            Font = new Font("Segoe UI", 8F, FontStyle.Regular),
+            AutoSize = true,
+            LinkColor = Color.HotPink, // Розовый цвет для соответствия стилю
+            ActiveLinkColor = Color.DeepPink,
+            VisitedLinkColor = Color.Pink,
+            BackColor = Color.Transparent,
+            TextAlign = ContentAlignment.MiddleCenter
+        };
+        linkLabel.Location = new Point((Width - linkLabel.PreferredWidth) / 2, Height - 60); // Внизу формы
+        linkLabel.LinkClicked += (s, e) =>
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "https://vk.com/public213597544",
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Не удалось открыть ссылку: {ex.Message}");
+            }
+        };
+
         centerPanel.Controls.Add(sloganLabel);
         centerPanel.Controls.Add(loginButton);
         centerPanel.Controls.Add(registerButton);
+        centerPanel.Controls.Add(linkLabel);
         Controls.Add(centerPanel);
     }
 
