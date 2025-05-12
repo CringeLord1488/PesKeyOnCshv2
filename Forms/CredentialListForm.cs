@@ -1,4 +1,3 @@
-using System;
 using System.Drawing;
 using System.Windows.Forms;
 using PasswordManagerApp.Services;
@@ -14,7 +13,7 @@ public class CredentialListForm : Form
     private readonly string _masterPassword;
 
     private Button _addButton = null!;
-    
+
     public CredentialListForm(AuthService authService, StorageService storageService, string masterPassword)
     {
         _authService = authService;
@@ -33,7 +32,7 @@ public class CredentialListForm : Form
         MaximizeBox = false;
         FormBorderStyle = FormBorderStyle.FixedSingle;
 
-        // Верхняя панель с заголовком
+        // Верхняя панель
         var topPanel = new Panel
         {
             Dock = DockStyle.Top,
@@ -65,18 +64,52 @@ public class CredentialListForm : Form
 
         foreach (var cred in _storageService.ReadCredentials())
         {
+            // Контейнер для записи
             var container = new Panel
             {
-                Width = flowPanel.Width - 40,
-                Height = 60,
+                Width = flowPanel.Width - 70,
+                Height = 80,
                 BorderStyle = BorderStyle.FixedSingle,
                 BackColor = Color.LightBlue,
                 Margin = new Padding(5)
             };
 
-            var nameLabel = new Label { Text = $"Сервис: {cred.ServiceName}", Location = new Point(10, 10), AutoSize = true };
-            var loginLabel = new Label { Text = $"Логин: {cred.Login}", Location = new Point(10, 30), AutoSize = true };
-            var passLabel = new Label { Text = $"Пароль: {AesEncryption.Decrypt(cred.EncryptedPassword, _masterPassword)}", Location = new Point(10, 50), AutoSize = true };
+            // Панель для меток (чтобы они не перекрывали кнопку)
+            var labelPanel = new Panel
+            {
+                Dock = DockStyle.Left,
+                Width = container.Width - 50, // Оставляем место для кнопки
+                Height = container.Height,
+                BackColor = Color.Transparent
+            };
+
+            // Текстовые метки
+            var nameLabel = new Label
+            {
+                Text = $"Сервис: {cred.ServiceName}",
+                Dock = DockStyle.Top,
+                TextAlign = ContentAlignment.MiddleCenter,
+                AutoSize = false,
+                Height = 25
+            };
+
+            var loginLabel = new Label
+            {
+                Text = $"Логин: {cred.Login}",
+                Dock = DockStyle.Top,
+                TextAlign = ContentAlignment.MiddleCenter,
+                AutoSize = false,
+                Height = 25
+            };
+
+            var passLabel = new Label
+            {
+                Text = $"Пароль: {AesEncryption.Decrypt(cred.EncryptedPassword, _masterPassword)}",
+                Dock = DockStyle.Top,
+                TextAlign = ContentAlignment.MiddleCenter,
+                AutoSize = false,
+                Height = 25
+            };
 
             // Кнопка удаления ❌
             var deleteButton = new Button
@@ -88,26 +121,32 @@ public class CredentialListForm : Form
                 BackColor = Color.Red,
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 10F),
-                Tag = cred.Id
+                Tag = cred.Id,
             };
-
-            deleteButton.Location = new Point(container.Width - deleteButton.Width - 10, 10); // Правый верхний угол
             deleteButton.Click += (s, e) =>
             {
                 int id = (int)deleteButton.Tag!;
                 _storageService.DeleteCredential(id);
-
                 Controls.Clear();
-                InitializeUI(); // Обновляем интерфейс
+                InitializeUI(); // Перезагружаем интерфейс
             };
 
-            container.Controls.AddRange(new Control[] { nameLabel, loginLabel, passLabel, deleteButton });
+            deleteButton.Location = new Point(container.Width - deleteButton.Width - 10, 10);
+
+           // Добавляем метки в labelPanel
+            labelPanel.Controls.Add(passLabel);
+            labelPanel.Controls.Add(loginLabel);
+            labelPanel.Controls.Add(nameLabel);
+
+           // Добавляем элементы в контейнер
+            container.Controls.Add(labelPanel);
+            container.Controls.Add(deleteButton);
             flowPanel.Controls.Add(container);
         }
 
         Controls.Add(flowPanel);
 
-        // Кнопка добавления +
+        // ➕ Кнопка добавления
         _addButton = new Button
         {
             Text = "+",
@@ -124,7 +163,6 @@ public class CredentialListForm : Form
         Controls.Add(_addButton);
         _addButton.BringToFront();
 
-        // Обновляем расположение кнопки после создания
         Load += (s, e) => UpdateAddButtonLocation();
         Resize += (s, e) => UpdateAddButtonLocation();
 
@@ -145,10 +183,10 @@ public class CredentialListForm : Form
     private void ShowAddForm()
     {
         var addForm = new AddCredentialForm(_storageService, _masterPassword);
-        addForm.FormClosed += (s, e) =>
+        addForm.FormClosed += (sender, args) =>
         {
             Controls.Clear();
-            InitializeUI(); // Перезагружаем форму
+            InitializeUI(); // Обновляем форму
         };
         addForm.Show(this);
     }
